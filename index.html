@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<!-- Theme Made By www.w3schools.com - No Copyright -->
+	<title>GeekLib</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+	<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet" type="text/css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="50">
+
+	<div class="header" style="text-align: center;">
+		<a href="#myPage">
+			<img src="img/GeekLib.png" alt="GeekLib" width="120" height="25">
+		</a>
+	</div><br>
+
+	<div style="margin-right: 5%; float: right;">
+		<button type="button" class="btn btn-primary" onclick="showAddModal()">Add
+			Book</button>
+	</div><br>
+	<hr>
+
+	<div style="text-align: center;">
+		<button type="button" id="msgBtn" class="btn btn-success" style="width: 400px;"></button>
+	</div>
+	<hr>
+	<table class="table" id="table">
+		<thead>
+			<tr>
+				<th scope="col">S No.</th>
+				<th scope="col">Name</th>
+				<th scope="col">Author</th>
+				<th scope="col">Genere</th>
+				<th scope="col">Edition</th>
+				<th scope="col">Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr id="data"></tr>
+		</tbody>
+	</table>
+
+
+	<!-- Modal For Delete Confirmation -->
+	<div id="deleteModal" class="modal">
+
+		<!-- Modal content -->
+		<div class="modal-content">
+			<div class="modal-header">
+				<span class="close">&times;</span>
+				<h2>Delete Book</h2>
+			</div>
+			<div class="modal-image">
+				<p></p>
+				<img src="img/emojione_warning.png" alt="GeekLib" width="100" height="100"><br>
+			</div>
+			<div class="modal-body">
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" id="btnCancel">No</button>
+			</div>
+		</div>
+
+	</div>
+	<!-- Modal For Delete Confirmation -->
+
+	<!-- Modal For Add/EditBook -->
+	<div id="addModal" class="modal">
+
+		<!-- Modal content -->
+		<div class="modal-content">
+			<div class="modal-header">
+				<span class="close">&times;</span>
+				<h2>Add/Edit Book</h2>
+			</div>
+			<div class="modal-body">
+
+				<div class="row">
+					<div class="col-md-10 mx-auto">
+						<form>
+							<div class="form-group row">
+								<div class="col-sm-6">
+									<label id="bookNameLb">Name</label>
+									<input type="text" class="form-control" id="bookName" placeholder="Book Name">
+									<p id="nameEr" class="error">Please Enter "Book Name".</p>
+								</div>
+								<div class="col-sm-6">
+									<label id="genereLb">Genere</label>
+									<input type="text" class="form-control" id="genere" placeholder="Genere">
+									<p id="genereEr" class="error">Please Enter "Genere".</p>
+								</div>
+							</div>
+							<div class="form-group row">
+								<div class="col-sm-6">
+									<label id="editionLb">Edition</label>
+									<input type="text" class="form-control" id="edition" placeholder="Edition">
+									<p id="editionEr" class="error">Please Enter "Edition".</p>
+								</div>
+								<div class="col-sm-6">
+									<label id="authorLb">Author</label>
+									<input type="text" class="form-control" id="author" placeholder="Author">
+									<p id="authorEr" class="error">Please Enter "Author Name".</p>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+
+			</div>
+			<div class="modal-footer">
+
+			</div>
+		</div>
+
+	</div>
+	<!-- Modal For Add/EditBook -->
+
+
+</body>
+<div id="loading">
+	<img id="loading-image" src="img/icon-park-outline_loading.png" alt="Loading..." />
+	<h3 id="loading-text">Fetching Books...</h3>
+</div>
+
+
+
+<script>
+	$(document).ready(function () {
+		$('#msgBtn').hide();
+		setTimeout(() => {
+			$('#loading').hide();
+			initialize();
+		}, 1000);
+
+		// Get the modal
+		const deleteModal = document.getElementById("deleteModal");
+		const addModal = document.getElementById("addModal");
+
+		// Get the <span> element that closes the modal
+		const spanDelete = document.getElementsByClassName("close")[0];
+		const spanAdd = document.getElementsByClassName("close")[1];
+
+		// When the user clicks on <span> (x), close the modal
+		spanDelete.onclick = function () {
+			$('#addModal').hide();
+			$('#deleteModal').hide();
+			resetForm();
+		}
+		spanAdd.onclick = function () {
+			$('#addModal').hide();
+			$('#deleteModal').hide();
+			resetForm();
+		}
+
+		// When the user clicks anywhere outside of the modal, close it
+		window.onclick = function (event) {
+			if (event.target == deleteModal || event.target == addModal) {
+				$('#addModal').hide();
+				$('#deleteModal').hide();
+				resetForm();
+			}
+		}
+
+	});
+
+	function initialize() {
+		resetForm();
+		let sampleData = [
+			{
+				id: 1,
+				name: '3 Idiots',
+				author: 'Chetan Bhagat',
+				genere: 'Novel',
+				edition: '1st'
+			}
+		];
+
+		let libData = JSON.parse(localStorage.getItem('libData'));
+		if (!libData) {
+			localStorage.setItem('libData', JSON.stringify(sampleData));
+			libData = sampleData;
+		}
+
+		let table = document.getElementById("table");
+		var tableRows = table.getElementsByTagName('tr');
+		var rowCount = tableRows.length;
+
+		for (let x = rowCount - 1; x > 0; x--) {
+			table.deleteRow(x);
+		}
+
+		for (let i = 0; i < libData.length; i++) {
+			let rowData = libData[i];
+			let row = table.insertRow(-1); // -1 to append at end of table
+			let cell1 = row.insertCell(0);
+			let cell2 = row.insertCell(1);
+			let cell3 = row.insertCell(2);
+			let cell4 = row.insertCell(3);
+			let cell5 = row.insertCell(4);
+			let cell6 = row.insertCell(5);
+			cell1.innerHTML = `${rowData.id}.`;
+			cell2.innerHTML = rowData.name;
+			cell3.innerHTML = rowData.author;
+			cell4.innerHTML = rowData.genere;
+			cell5.innerHTML = rowData.edition;
+			cell6.innerHTML = `<button type='button' class='btn' onclick='showAddModal(${rowData.id})' >Edit</button><button type='button' class='btn btn-danger' onclick='showDeleteModal(${rowData.id})' >Delete</button>`;
+		}
+	}
+
+	function showDeleteModal(id) {
+		const libData = JSON.parse(localStorage.getItem('libData')) || [];
+		const bookName = (libData && libData.length) ? (libData.find(itm => itm.id == id)).name : '';
+		let modal = document.getElementById("deleteModal");
+		$("#deleteModal .modal-body").empty();
+		$("#deleteModal .modal-footer").empty();
+		$("#deleteModal .modal-footer").css('text-align', 'right');
+		$("#deleteModal .modal-body").append($(`<p>Are you sure you wanto delete <b>${bookName}</b>?</p>`));
+		$("#deleteModal .modal-footer").append($(`<button type="button" class="btn btn-primary" onClick="$('#deleteModal').hide()">No</button>`));
+		$("#deleteModal .modal-footer").append($(`<button type="button" class="btn btn-primary" onclick="deleteBook(${id})">Yes</button>`));
+		$('#deleteModal').show();
+	}
+	function deleteBook(id) {
+		const libData = JSON.parse(localStorage.getItem('libData')) || [];
+		const bookName = (libData && libData.length) ? (libData.find(itm => itm.id == id)).name : '';
+		const filtereddata = libData.filter((itm) => itm.id != id);
+		localStorage.setItem('libData', JSON.stringify(filtereddata));
+		$("#deleteModal .modal-footer").empty();
+		$("#deleteModal .modal-footer").css('text-align', 'center');
+		$("#deleteModal .modal-footer").append($(`<img src="img/icon-park-outline_loading.png" width="20" height="20" alt="Loading..." />`));
+		$("#deleteModal .modal-footer").append($(`<p>Deleting Book</p>`));
+		setTimeout(() => {
+			$('#msgBtn').removeClass('btn-success')
+			$('#msgBtn').addClass('btn-danger');
+			$('#msgBtn').text(`${bookName} Deleted!`);
+			$('#msgBtn').show();
+			$('#deleteModal').hide();
+			initialize();
+		}, 1500);
+
+	}
+
+	function showAddModal(id) {
+		const libData = JSON.parse(localStorage.getItem('libData')) || [];
+		let modal = document.getElementById("addModal");
+		$("#addModal .modal-footer").empty();
+		$("#addModal .modal-footer").css('text-align', 'right');
+		$("#addModal .modal-footer").append($(`<button type="button" class="btn btn-primary" onClick="$('#addModal').hide();resetForm();">Cancel</button>`));
+		$("#addModal .modal-footer").append($(`<button type="button" class="btn btn-primary" onclick="addEditBook(${id})">Save</button>`));
+		$('#addModal').show();
+		if (id) {
+			const bookDtl = (libData && libData.length) ? ((libData.find(itm => itm.id == id)) || []) : [];
+			$('#bookName').val(bookDtl.name);
+			$('#author').val(bookDtl.author);
+			$('#edition').val(bookDtl.edition);
+			$('#genere').val(bookDtl.genere);
+		}
+		else {
+			$('#bookName').val('');
+			$('#author').val('');
+			$('#edition').val('');
+			$('#genere').val('');
+		}
+	}
+
+	function addEditBook(id) {
+		const formValid = validateForm();
+		if (!formValid)
+			return true;
+
+		let libData = JSON.parse(localStorage.getItem('libData')) || [];
+		let resMsg = '';
+		if (id) {
+			//Find index of specific object using findIndex method.    
+			objIndex = libData.findIndex((obj => obj.id == id));
+
+			libData[objIndex].name = $('#bookName').val();
+			libData[objIndex].author = $('#author').val();
+			libData[objIndex].edition = $('#edition').val();
+			libData[objIndex].genere = $('#genere').val();
+			resMsg = `Changes Saved!`;
+		}
+		else {
+			const maxId = (libData && libData.length) ? Math.max(...libData.map(o => o.id), 0) : 0;
+			const formObj = {
+				id: maxId + 1,
+				name: $('#bookName').val(),
+				author: $('#author').val(),
+				edition: $('#edition').val(),
+				genere: $('#genere').val()
+			}
+			libData.push(formObj);
+			resMsg = `Book Added!`;
+		}
+		localStorage.setItem('libData', JSON.stringify(libData));
+		$("#addModal .modal-footer").empty();
+		$("#addModal .modal-footer").css('text-align', 'center');
+		$("#addModal .modal-footer").append($(`<img src="img/icon-park-outline_loading.png" width="20" height="20" alt="Loading..." />`));
+		$("#addModal .modal-footer").append($(`<p>Saving Changes</p>`));
+		setTimeout(() => {
+			$('#msgBtn').removeClass('btn-danger')
+			$('#msgBtn').addClass('btn-success');
+			$('#msgBtn').text(resMsg);
+			$('#msgBtn').show();
+			$('#addModal').hide();
+			initialize();
+		}, 1500);
+	}
+
+	function validateForm() {
+		let validation = true;
+		const bookName = $('#bookName').val().trim();
+		const author = $('#author').val().trim();
+		const edition = $('#edition').val().trim();
+		const genere = $('#genere').val().trim();
+
+		if (bookName == '') {
+			$('#nameEr').show();
+			$('#bookName').css('border-color', 'red');
+			$('#bookNameLb').css('color', 'red');
+			validation = false;
+		}
+
+		if (author == '') {
+			$('#authorEr').show();
+			$('#author').css('border-color', 'red');
+			$('#authorLb').css('color', 'red');
+			validation = false;
+		}
+
+		if (edition == '') {
+			$('#editionEr').show();
+			$('#edition').css('border-color', 'red');
+			$('#editionLb').css('color', 'red');
+			validation = false;
+		}
+
+		if (genere == '') {
+			$('#genereEr').show();
+			$('#genere').css('border-color', 'red');
+			$('#genereLb').css('color', 'red');
+			validation = false;
+		}
+
+		return validation;
+	}
+
+	function resetForm() {
+		$('#nameEr').hide();
+		$('#authorEr').hide();
+		$('#editionEr').hide();
+		$('#genereEr').hide();
+
+		$('#bookName').css('border-color', '#777');
+		$('#bookNameLb').css('color', '#777');
+
+		$('#author').css('border-color', '#777');
+		$('#authorLb').css('color', '#777');
+
+		$('#edition').css('border-color', '#777');
+		$('#editionLb').css('color', '#777');
+
+
+		$('#genere').css('border-color', '#777');
+		$('#genereLb').css('color', '#777');
+
+	}
+
+</script>
+
+</html>
